@@ -1,0 +1,74 @@
+{
+  "name": "indian-option-mcp",
+  "version": "1.0.0",
+  "description": "Model Context Protocol server for Indian options market analysis — real-time option chains, Greeks, strategy building, and payoff analysis for NSE/NFO derivatives. Works with Claude Desktop.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "indian-option-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    ".env.example"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "inspect": "npx @modelcontextprotocol/inspector node dist/index.js",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run clean && npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "options",
+    "option-chain",
+    "nse",
+    "nifty",
+    "banknifty",
+    "derivatives",
+    "greeks",
+    "black-scholes",
+    "india",
+    "trading",
+    "sensibull",
+    "zerodha",
+    "f&o",
+    "iron-condor",
+    "straddle",
+    "implied-volatility",
+    "max-pain",
+    "open-interest",
+    "claude-desktop",
+    "ai-tools"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devagarwalla/Indian-Option-MCP.git"
+  },
+  "homepage": "https://github.com/devagarwalla/Indian-Option-MCP#readme",
+  "bugs": {
+    "url": "https://github.com/devagarwalla/Indian-Option-MCP/issues"
+  },
+  "author": "devagarwalla",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "zod": "^3.25.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.18",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
