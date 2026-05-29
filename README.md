@@ -117,7 +117,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/Indian-Option-MCP.git
+git clone https://github.com/devag7/Indian-Option-MCP.git
 cd Indian-Option-MCP
 
 # Install dependencies

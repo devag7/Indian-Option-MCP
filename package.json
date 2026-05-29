@@ -51,13 +51,13 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/devagarwalla/Indian-Option-MCP.git"
+    "url": "git+https://github.com/devag7/Indian-Option-MCP.git"
   },
-  "homepage": "https://github.com/devagarwalla/Indian-Option-MCP#readme",
+  "homepage": "https://github.com/devag7/Indian-Option-MCP#readme",
   "bugs": {
-    "url": "https://github.com/devagarwalla/Indian-Option-MCP/issues"
+    "url": "https://github.com/devag7/Indian-Option-MCP/issues"
   },
-  "author": "devagarwalla",
+  "author": "devag7",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
