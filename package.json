@@ -10,6 +10,7 @@
   },
   "files": [
     "dist",
+    "start-mcp.sh",
     "README.md",
     "LICENSE",
     ".env.example"
