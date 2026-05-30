@@ -9,7 +9,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { createServer } from './server.js';
 
 async function main(): Promise<void> {
-  const server = await createServer();
+  const server = createServer();
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error('🇮🇳 Indian Option MCP Server v1.0.0 running on stdio');

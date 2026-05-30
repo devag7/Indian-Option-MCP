@@ -40,22 +40,39 @@ import type { OptionChainData, OptionData } from './data/providers/base.provider
 const provider = createDataProvider();
 const chainCache = new MemoryCache<OptionChainData>({ maxSize: 50, ttlMs: 10000 });
 
-export async function createServer(): Promise<McpServer> {
+// ── Lazy provider initialization ─────────────────────────────────────────
+// Claude Desktop has a strict timeout on MCP server startup.
+// NSE cookie fetch can take 10-15s → we MUST NOT block createServer().
+// Instead, the provider initializes lazily on the first tool call.
+let providerReady = false;
+let providerInitPromise: Promise<void> | null = null;
+
+async function ensureProvider(): Promise<void> {
+  if (providerReady) return;
+  if (!providerInitPromise) {
+    providerInitPromise = provider.initialize().then(() => {
+      providerReady = true;
+      console.error('Data provider initialized: ' + (provider as { name: string }).name);
+    }).catch((err) => {
+      providerInitPromise = null; // allow retry
+      throw err;
+    });
+  }
+  await providerInitPromise;
+}
+
+export function createServer(): McpServer {
   const server = new McpServer({
     name: 'indian-option-mcp',
     version: '1.0.0',
   });
 
-  // Initialize provider
-  try {
-    await provider.initialize();
-    console.error('Data provider initialized: ' + (provider as { name: string }).name);
-  } catch (err) {
-    console.error('Provider init warning (will retry on first request):', err);
-  }
+  // Fire-and-forget: start init in background (but don't block server startup)
+  ensureProvider().catch(() => {});
 
-  // Helper to get cached option chain
+  // Helper to get cached option chain (ensures provider is ready)
   async function getChain(symbol: string, expiry?: string): Promise<OptionChainData> {
+    await ensureProvider();
     const key = `${symbol}:${expiry || 'nearest'}`;
     return chainCache.getOrFetch(key, () => provider.getOptionChain(symbol, expiry));
   }
