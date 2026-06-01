@@ -10,7 +10,7 @@
   },
   "files": [
     "dist",
-    "start-mcp.sh",
+    "smithery.yaml",
     "README.md",
     "LICENSE",
     ".env.example"
