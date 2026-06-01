@@ -9,19 +9,42 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/devag7/Indian-Option-MCP/stargazers"><img src="https://img.shields.io/github/stars/devag7/Indian-Option-MCP?style=flat-square&color=FFD700" alt="Stars" /></a>
+  <a href="https://www.npmjs.com/package/indian-option-mcp"><img src="https://img.shields.io/npm/v/indian-option-mcp?style=flat-square&color=CB3837" alt="npm" /></a>
+  <a href="https://www.npmjs.com/package/indian-option-mcp"><img src="https://img.shields.io/npm/dm/indian-option-mcp?style=flat-square&color=blue" alt="Downloads" /></a>
   <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Node.js_20+-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js" />
   <img src="https://img.shields.io/badge/MCP_SDK-Claude_Desktop-8B5CF6?style=flat-square" alt="MCP" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" />
   <img src="https://img.shields.io/badge/data-NSE_India-blue?style=flat-square" alt="NSE" />
   <img src="https://img.shields.io/badge/strategies-34+-ff6b6b?style=flat-square" alt="Strategies" />
-  <img src="https://img.shields.io/badge/tools-35+-ffd93d?style=flat-square" alt="Tools" />
+  <img src="https://img.shields.io/badge/tools-27+-ffd93d?style=flat-square" alt="Tools" />
   <img src="https://img.shields.io/badge/zero_external-trading_deps-2d3436?style=flat-square" alt="No external deps" />
 </p>
 
 <p align="center">
   <em>A Sensibull-replacement that lives inside your AI assistant. Ask Claude to build iron condors, calculate Greeks, scan for unusual OI activity, and more — all with live NSE data.</em>
 </p>
+
+---
+
+## 🆓 Free Alternative to Sensibull & Opstra
+
+| Feature | Sensibull (₹1500/mo) | Opstra (₹999/mo) | **Indian Option MCP (Free)** |
+|:---|:---:|:---:|:---:|
+| Option Chain | ✅ | ✅ | ✅ **Live from NSE** |
+| Strategy Builder | ✅ (20+) | ✅ (15+) | ✅ **34 strategies** |
+| Greeks Calculator | ✅ | ✅ | ✅ **Black-Scholes** |
+| Max Pain | ✅ | ✅ | ✅ |
+| OI Analysis | ✅ | ✅ | ✅ |
+| IV Smile/Skew | ❌ | ✅ | ✅ |
+| Position Sizing | ❌ | ❌ | ✅ |
+| Margin Estimation | ❌ | ❌ | ✅ |
+| Probability of Profit | ❌ | ❌ | ✅ |
+| AI-Powered Analysis | ❌ | ❌ | ✅ **Claude AI** |
+| Natural Language | ❌ | ❌ | ✅ **"Build me an Iron Condor"** |
+| API/Programmatic | ❌ | ❌ | ✅ **MCP Protocol** |
+| **Price** | **₹1500/month** | **₹999/month** | **🆓 Forever Free** |
 
 ---
 
@@ -108,22 +131,32 @@
 
 ## ⚡ Quick Start
 
-### Prerequisites
+### Option 1: npx (Recommended — Zero Install)
 
-- **Node.js 20+** — `node --version`
-- **Claude Desktop** with MCP support
+Add this to your Claude Desktop config:
 
-### Install & Build
+```jsonc
+{
+  "mcpServers": {
+    "indian-options": {
+      "command": "npx",
+      "args": ["-y", "indian-option-mcp"]
+    }
+  }
+}
+```
+
+Restart Claude Desktop. Done. 🎉
+
+### Option 2: Clone & Build
 
 ```bash
 # Clone the repository
 git clone https://github.com/devag7/Indian-Option-MCP.git
 cd Indian-Option-MCP
 
-# Install dependencies
+# Install dependencies & build
 npm install
-
-# Build
 npm run build
 ```
 

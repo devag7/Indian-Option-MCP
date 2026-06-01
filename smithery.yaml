@@ -1,0 +1,26 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      DATA_PROVIDER:
+        type: string
+        description: "Data provider: 'nse' (free, default) or 'zerodha' (needs API key)"
+        default: "nse"
+        enum: ["nse", "zerodha"]
+      KITE_API_KEY:
+        type: string
+        description: "Zerodha Kite API key (only if DATA_PROVIDER=zerodha)"
+      KITE_ACCESS_TOKEN:
+        type: string
+        description: "Zerodha Kite access token (only if DATA_PROVIDER=zerodha)"
+  commandFunction: |-
+    (config) => ({
+      command: 'npx',
+      args: ['-y', 'indian-option-mcp'],
+      env: {
+        DATA_PROVIDER: config.DATA_PROVIDER || 'nse',
+        ...(config.KITE_API_KEY ? { KITE_API_KEY: config.KITE_API_KEY } : {}),
+        ...(config.KITE_ACCESS_TOKEN ? { KITE_ACCESS_TOKEN: config.KITE_ACCESS_TOKEN } : {}),
+      }
+    })
