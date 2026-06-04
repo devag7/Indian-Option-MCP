@@ -180,7 +180,7 @@ Add this to your Claude Desktop config file:
   "mcpServers": {
     "indian-options": {
       "command": "node",
-      "args": ["/absolute/path/to/Indian-Option-MCP/dist/index.js"],
+      "args": ["/absolute/path/to/Indian-Option-MCP/dist/bundle.mjs"],
       "env": {
         "DATA_PROVIDER": "nse"
       }
