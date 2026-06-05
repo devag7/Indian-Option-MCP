@@ -527,13 +527,9 @@ export class NSEProvider extends BaseProvider {
   }
 
   async getExpiryDates(symbol: string): Promise<string[]> {
-    const endpoint = this.isIndex(symbol)
-      ? `/api/option-chain-indices?symbol=${encodeURIComponent(symbol)}`
-      : `/api/option-chain-equities?symbol=${encodeURIComponent(symbol)}`;
-
-    const raw = await this.nseFetch<NseOptionChainResponse>(endpoint);
-    const dates = raw?.records?.expiryDates ?? [];
-    return dates.map(parseNSEDate);
+    // Reuse getOptionChain which handles fallback to liveEquity-derivatives
+    const chain = await this.getOptionChain(symbol);
+    return chain.expiryDates;
   }
 
   async getSpotPrice(symbol: string): Promise<number> {
