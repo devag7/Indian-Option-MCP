@@ -146,9 +146,9 @@ export function createServer(): McpServer {
 
   server.tool(
     'get_expiry_dates',
-    'Get all available expiry dates for an F&O symbol.',
+    'Get all available F&O expiry dates for an Indian stock or index. Use to find weekly/monthly expiries before building strategies. Returns a numbered list of expiry dates sorted chronologically.',
     {
-      symbol: z.string().describe('Symbol, e.g. NIFTY, BANKNIFTY, RELIANCE'),
+      symbol: z.string().describe('NSE underlying symbol, e.g. NIFTY, BANKNIFTY, RELIANCE, TATASTEEL'),
     },
     async ({ symbol }) => {
       const chain = await getChain(symbol.toUpperCase());
@@ -163,9 +163,9 @@ export function createServer(): McpServer {
 
   server.tool(
     'get_spot_price',
-    'Get the current spot/underlying price of an Indian stock or index.',
+    'Get the current spot/underlying price of an Indian stock or index from NSE. Use this to check the latest price before calculating Greeks or building strategies. Returns spot price with timestamp.',
     {
-      symbol: z.string().describe('Symbol, e.g. NIFTY, BANKNIFTY, RELIANCE'),
+      symbol: z.string().describe('NSE underlying symbol, e.g. NIFTY, BANKNIFTY, RELIANCE, INFY'),
     },
     async ({ symbol }) => {
       const chain = await getChain(symbol.toUpperCase());
@@ -818,7 +818,7 @@ export function createServer(): McpServer {
 
   server.tool(
     'market_status',
-    'Check if the Indian stock market (NSE) is currently open or closed.',
+    'Check if the Indian stock market (NSE) is currently open or closed. Returns market status with trading hours info. Use before placing trades or to explain why data may be stale. Accounts for weekends and Indian market holidays.',
     {},
     async () => {
       const status = getMarketStatusInfo();
@@ -830,9 +830,9 @@ export function createServer(): McpServer {
 
   server.tool(
     'lot_size',
-    'Get the lot size for any Indian F&O stock or index.',
+    'Get the F&O lot size (number of shares per contract) for any NSE stock or index. Essential for calculating strategy costs, margin, and position sizing. Returns the current lot size as defined by NSE.',
     {
-      symbol: z.string().describe('Symbol, e.g. NIFTY, RELIANCE, BANKNIFTY'),
+      symbol: z.string().describe('NSE F&O symbol, e.g. NIFTY (75), BANKNIFTY (30), RELIANCE, TATASTEEL'),
     },
     async ({ symbol }) => {
       const size = getLotSize(symbol.toUpperCase());
@@ -844,9 +844,9 @@ export function createServer(): McpServer {
 
   server.tool(
     'next_expiry',
-    'Get the next expiry date for an F&O symbol.',
+    'Get the next upcoming F&O expiry date for an Indian stock or index. Supports both weekly (index) and monthly expiries. Use to determine time-to-expiry for Greeks calculations or strategy timing.',
     {
-      symbol: z.string().describe('Symbol'),
+      symbol: z.string().describe('NSE F&O symbol, e.g. NIFTY, BANKNIFTY, RELIANCE'),
       weekly: z.boolean().optional().describe('If true, get weekly expiry (only indices have weekly)'),
     },
     async ({ symbol, weekly }) => {

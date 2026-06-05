@@ -32,15 +32,15 @@
     "oi_change_analysis",
     "iv_smile",
     "expected_move",
-    "probability_of_profit",
-    "position_sizer",
-    "estimate_margin",
-    "market_status",
     "market_overview",
-    "get_lot_size",
+    "market_status",
+    "lot_size",
     "next_expiry",
-    "scan_high_oi_buildup",
-    "scan_unusual_activity"
+    "estimate_margin",
+    "probability_of_profit",
+    "position_sizing",
+    "scan_high_oi",
+    "unusual_activity"
   ],
   "categories": [
     "finance",
