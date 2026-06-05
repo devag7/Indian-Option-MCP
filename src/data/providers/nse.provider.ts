@@ -320,13 +320,173 @@ export class NSEProvider extends BaseProvider {
     symbol: string,
     expiryDate?: string,
   ): Promise<OptionChainData> {
-    const endpoint = this.isIndex(symbol)
-      ? `/api/option-chain-indices?symbol=${encodeURIComponent(symbol)}`
-      : `/api/option-chain-equities?symbol=${encodeURIComponent(symbol)}`;
+    const upperSymbol = symbol.toUpperCase();
 
-    const raw = await this.nseFetch<NseOptionChainResponse>(endpoint);
+    // ── Primary endpoint (available during & shortly after market hours) ──
+    try {
+      const endpoint = this.isIndex(upperSymbol)
+        ? `/api/option-chain-indices?symbol=${encodeURIComponent(upperSymbol)}`
+        : `/api/option-chain-equities?symbol=${encodeURIComponent(upperSymbol)}`;
 
-    return this.mapOptionChain(symbol, raw, expiryDate);
+      const raw = await this.nseFetch<NseOptionChainResponse>(endpoint);
+      // Validate we got actual data (NSE sometimes returns empty JSON)
+      if (raw?.records?.data?.length) {
+        return this.mapOptionChain(upperSymbol, raw, expiryDate);
+      }
+      console.error('[NSE] Primary option chain returned empty data — trying fallback.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[NSE] Primary option chain failed: ${msg} — trying fallback endpoint.`);
+    }
+
+    // ── Fallback: /api/liveEquity-derivatives (available even after hours) ──
+    try {
+      return await this.getOptionChainFromDerivatives(upperSymbol, expiryDate);
+    } catch (fallbackErr: unknown) {
+      const msg = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr);
+      console.error(`[NSE] Fallback endpoint also failed: ${msg}`);
+      throw new Error(
+        `NSE option chain unavailable for ${upperSymbol}. ` +
+        `Both primary and fallback APIs returned errors. ` +
+        `NSE may be undergoing maintenance. Try again in a few minutes.`,
+      );
+    }
+  }
+
+  // ── Fallback option chain from live derivatives endpoint ─────────────
+
+  /** Map symbol to the NSE derivatives index filter value */
+  private getDerivativesIndex(symbol: string): string {
+    const map: Record<string, string> = {
+      NIFTY: 'nse50_opt',
+      'NIFTY 50': 'nse50_opt',
+      BANKNIFTY: 'nsebank_opt',
+      'NIFTY BANK': 'nsebank_opt',
+      FINNIFTY: 'nse_fo',
+      MIDCPNIFTY: 'nse_fo',
+    };
+    return map[symbol] ?? 'nse_fo';
+  }
+
+  private async getOptionChainFromDerivatives(
+    symbol: string,
+    filterExpiry?: string,
+  ): Promise<OptionChainData> {
+    const indexParam = this.getDerivativesIndex(symbol);
+    const raw = await this.nseFetch<NseLiveDerivativesResponse>(
+      `/api/liveEquity-derivatives?index=${indexParam}`,
+    );
+
+    if (!raw?.data?.length) {
+      throw new Error('No derivatives data returned from NSE');
+    }
+
+    // Filter rows for this symbol
+    const symbolRows = raw.data.filter(
+      (r) => r.underlying?.toUpperCase() === symbol &&
+             (r.instrumentType === 'OPTIDX' || r.instrumentType === 'OPTSTK'),
+    );
+
+    if (!symbolRows.length) {
+      throw new Error(`No option data found for ${symbol} in derivatives feed`);
+    }
+
+    // Collect unique expiry dates and strike prices
+    const expirySet = new Set<string>();
+    const strikeSet = new Set<number>();
+    let underlyingValue = 0;
+
+    for (const row of symbolRows) {
+      expirySet.add(parseNSEDate(row.expiryDate ?? ''));
+      strikeSet.add(row.strikePrice ?? 0);
+      if (row.underlyingValue && row.underlyingValue > 0) {
+        underlyingValue = row.underlyingValue;
+      }
+    }
+
+    const allExpiryDates = Array.from(expirySet).sort();
+    const allStrikePrices = Array.from(strikeSet).sort((a, b) => a - b);
+
+    // Determine target expiry
+    let targetExpiry: string | undefined;
+    if (filterExpiry) {
+      targetExpiry = filterExpiry.includes('-') && filterExpiry.length === 10
+        ? filterExpiry
+        : parseNSEDate(filterExpiry);
+    } else {
+      // Use nearest expiry
+      targetExpiry = allExpiryDates[0];
+    }
+
+    // Build option chain rows
+    const rowMap = new Map<string, OptionChainRow>();
+
+    for (const entry of symbolRows) {
+      const iso = parseNSEDate(entry.expiryDate ?? '');
+      if (targetExpiry && iso !== targetExpiry) continue;
+
+      const strike = entry.strikePrice ?? 0;
+      const key = `${iso}|${strike}`;
+      let row = rowMap.get(key);
+      if (!row) {
+        row = { strikePrice: strike, expiryDate: iso };
+        rowMap.set(key, row);
+      }
+
+      const optType = entry.optionType?.toUpperCase().startsWith('C') ? 'CE' : 'PE';
+      const leg: OptionData = {
+        strikePrice: strike,
+        expiryDate: iso,
+        optionType: optType,
+        lastPrice: entry.lastPrice ?? 0,
+        change: entry.change ?? 0,
+        pChange: entry.pChange ?? 0,
+        openInterest: entry.openInterest ?? 0,
+        changeinOpenInterest: 0, // not available in this endpoint
+        totalTradedVolume: entry.volume ?? 0,
+        impliedVolatility: 0, // not available in this endpoint
+        bidQty: 0,
+        bidPrice: 0,
+        askQty: 0,
+        askPrice: 0,
+        underlyingValue: entry.underlyingValue ?? underlyingValue,
+      };
+
+      if (optType === 'CE') row.CE = leg;
+      else row.PE = leg;
+    }
+
+    const rows = Array.from(rowMap.values()).sort(
+      (a, b) => a.strikePrice - b.strikePrice,
+    );
+
+    // Compute totals
+    let totalCEOI = 0, totalPEOI = 0, totalCEVol = 0, totalPEVol = 0;
+    for (const r of rows) {
+      totalCEOI += r.CE?.openInterest ?? 0;
+      totalPEOI += r.PE?.openInterest ?? 0;
+      totalCEVol += r.CE?.totalTradedVolume ?? 0;
+      totalPEVol += r.PE?.totalTradedVolume ?? 0;
+    }
+
+    console.error(
+      `[NSE] Fallback chain: ${rows.length} strikes, expiry=${targetExpiry}, ` +
+      `underlying=${underlyingValue} (IV not available in this endpoint)`,
+    );
+
+    return {
+      symbol,
+      underlyingValue,
+      expiryDate: targetExpiry ?? allExpiryDates[0] ?? '',
+      expiryDates: allExpiryDates,
+      strikePrices: allStrikePrices,
+      rows,
+      timestamp: raw.timestamp ?? new Date().toISOString(),
+      totalCEOpenInterest: totalCEOI,
+      totalPEOpenInterest: totalPEOI,
+      totalCEVolume: totalCEVol,
+      totalPEVolume: totalPEVol,
+    };
   }
 
   async getQuote(symbol: string): Promise<QuoteData> {
@@ -675,4 +835,39 @@ interface NseMarketStatusResponse {
     marketStatus?: string;
     tradeDate?: string;
   }>;
+}
+
+interface NseLiveDerivativesRow {
+  underlying?: string;
+  identifier?: string;
+  instrumentType?: string;
+  instrument?: string;
+  contract?: string;
+  expiryDate?: string;
+  optionType?: string;
+  strikePrice?: number;
+  lastPrice?: number;
+  change?: number;
+  pChange?: number;
+  openPrice?: number;
+  highPrice?: number;
+  lowPrice?: number;
+  closePrice?: number;
+  volume?: number;
+  totalTurnover?: number;
+  value?: number;
+  premiumTurnOver?: number;
+  underlyingValue?: number;
+  openInterest?: number;
+  noOfTrades?: number;
+}
+
+interface NseLiveDerivativesResponse {
+  data?: NseLiveDerivativesRow[];
+  timestamp?: string;
+  marketStatus?: {
+    market?: string;
+    marketOpenOrClose?: string;
+    marketStatusMessage?: string;
+  };
 }
