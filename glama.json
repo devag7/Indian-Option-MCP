@@ -1,0 +1,67 @@
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "maintainers": ["devag7"],
+  "name": "indian-option-mcp",
+  "description": "Real-time Indian options analytics MCP server — option chains, Greeks, 34+ strategies, OI analysis, IV smile, Max Pain. Free Sensibull alternative for Claude Desktop. Works 24/7 with automatic fallback.",
+  "repository": "https://github.com/devag7/Indian-Option-MCP",
+  "homepage": "https://github.com/devag7/Indian-Option-MCP#readme",
+  "license": "MIT",
+  "runtime": "node",
+  "mcpServers": {
+    "indian-options": {
+      "command": "npx",
+      "args": ["-y", "indian-option-mcp"]
+    }
+  },
+  "tools": [
+    "get_option_chain",
+    "get_expiry_dates",
+    "get_spot_price",
+    "calculate_greeks",
+    "calculate_iv",
+    "calculate_option_price",
+    "what_if_greeks",
+    "build_strategy",
+    "custom_strategy",
+    "suggest_strategy",
+    "list_strategies",
+    "calculate_payoff",
+    "calculate_max_pain",
+    "get_pcr",
+    "highest_oi_strikes",
+    "oi_change_analysis",
+    "iv_smile",
+    "expected_move",
+    "probability_of_profit",
+    "position_sizer",
+    "estimate_margin",
+    "market_status",
+    "market_overview",
+    "get_lot_size",
+    "next_expiry",
+    "scan_high_oi_buildup",
+    "scan_unusual_activity"
+  ],
+  "categories": [
+    "finance",
+    "trading",
+    "analytics",
+    "data"
+  ],
+  "tags": [
+    "options",
+    "nse",
+    "india",
+    "greeks",
+    "derivatives",
+    "nifty",
+    "banknifty",
+    "sensibull",
+    "option-chain",
+    "max-pain",
+    "open-interest",
+    "implied-volatility",
+    "strategy-builder",
+    "black-scholes"
+  ]
+}

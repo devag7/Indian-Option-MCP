@@ -12,6 +12,8 @@
   <a href="https://github.com/devag7/Indian-Option-MCP/stargazers"><img src="https://img.shields.io/github/stars/devag7/Indian-Option-MCP?style=flat-square&color=FFD700" alt="Stars" /></a>
   <a href="https://www.npmjs.com/package/indian-option-mcp"><img src="https://img.shields.io/npm/v/indian-option-mcp?style=flat-square&color=CB3837" alt="npm" /></a>
   <a href="https://www.npmjs.com/package/indian-option-mcp"><img src="https://img.shields.io/npm/dm/indian-option-mcp?style=flat-square&color=blue" alt="Downloads" /></a>
+  <a href="https://github.com/devag7/Indian-Option-MCP/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/devag7/Indian-Option-MCP/ci.yml?branch=main&style=flat-square&label=CI" alt="CI" /></a>
+  <a href="https://glama.ai/mcp/servers/devag7/Indian-Option-MCP"><img src="https://glama.ai/mcp/servers/devag7/Indian-Option-MCP/badge" alt="Glama MCP" /></a>
   <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Node.js_20+-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js" />
   <img src="https://img.shields.io/badge/MCP_SDK-Claude_Desktop-8B5CF6?style=flat-square" alt="MCP" />
