@@ -1,0 +1,174 @@
+name: Release & Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  # ── Step 1: Validate ──────────────────────────────────────────────────
+  validate:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify package.json version matches tag
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${{ steps.version.outputs.version }}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "❌ Version mismatch: package.json=$PKG_VERSION, tag=$TAG_VERSION"
+            echo "   Run: npm version $TAG_VERSION --no-git-tag-version"
+            exit 1
+          fi
+          echo "✅ Version match: $PKG_VERSION"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Smoke test
+        run: |
+          RESPONSE=$(printf '{"jsonrpc":"2.0","id":0,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"ci","version":"1"}}}\n' | timeout 10 node dist/bundle.mjs 2>/dev/null | head -1)
+          echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'✅ {d[\"result\"][\"serverInfo\"][\"name\"]} v{d[\"result\"][\"serverInfo\"][\"version\"]}')"
+
+  # ── Step 2: Publish to npm ─────────────────────────────────────────────
+  publish-npm:
+    name: Publish to npm
+    needs: validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish to npm
+        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Verify published package
+        run: |
+          sleep 10
+          npm info indian-option-mcp version
+          echo "✅ Published indian-option-mcp@${{ needs.validate.outputs.version }}"
+
+  # ── Step 3: Create GitHub Release ──────────────────────────────────────
+  github-release:
+    name: GitHub Release
+    needs: [validate, publish-npm]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install & Build
+        run: npm ci && npm run build
+
+      - name: Package tarball
+        run: npm pack
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get commits since last tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          else
+            COMMITS=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          fi
+
+          # Write to file for the release body
+          cat > /tmp/release-notes.md << NOTES
+          ## 🇮🇳 Indian Option MCP v${{ needs.validate.outputs.version }}
+
+          ### Installation
+
+          \`\`\`bash
+          npx -y indian-option-mcp
+          \`\`\`
+
+          Or add to Claude Desktop config:
+          \`\`\`json
+          {
+            "mcpServers": {
+              "indian-options": {
+                "command": "npx",
+                "args": ["-y", "indian-option-mcp"]
+              }
+            }
+          }
+          \`\`\`
+
+          ### What's Changed
+          ${COMMITS}
+
+          ### Highlights
+          - 🕐 **24/7 Availability** — Works even after market hours with automatic fallback
+          - 📊 **27 Tools** — Option chains, Greeks, 34 strategies, OI analysis, IV surface
+          - 🆓 **Free** — No API keys, no subscriptions. MIT licensed.
+          - ⚡ **Single-file bundle** — 857KB, zero ESM resolution issues
+
+          **Full Changelog**: https://github.com/devag7/Indian-Option-MCP/commits/v${{ needs.validate.outputs.version }}
+          NOTES
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: /tmp/release-notes.md
+          files: |
+            indian-option-mcp-*.tgz
+          generate_release_notes: false
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
