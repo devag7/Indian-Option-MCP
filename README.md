@@ -19,11 +19,12 @@
   <img src="https://img.shields.io/badge/data-NSE_India-blue?style=flat-square" alt="NSE" />
   <img src="https://img.shields.io/badge/strategies-34+-ff6b6b?style=flat-square" alt="Strategies" />
   <img src="https://img.shields.io/badge/tools-27+-ffd93d?style=flat-square" alt="Tools" />
+  <img src="https://img.shields.io/badge/24%2F7_Available-even_after_hours-brightgreen?style=flat-square" alt="24/7" />
   <img src="https://img.shields.io/badge/zero_external-trading_deps-2d3436?style=flat-square" alt="No external deps" />
 </p>
 
 <p align="center">
-  <em>A Sensibull-replacement that lives inside your AI assistant. Ask Claude to build iron condors, calculate Greeks, scan for unusual OI activity, and more — all with live NSE data.</em>
+  <em>A Sensibull-replacement that lives inside your AI assistant. Ask Claude to build iron condors, calculate Greeks, scan for unusual OI activity, and more — with live NSE data, available 24/7 (even after market hours).</em>
 </p>
 
 ---
@@ -57,6 +58,18 @@
 | Greeks analysis | Open Black-Scholes calculator, enter values | *"What are the Greeks for NIFTY 24000 CE?"* |
 | Finding support/resistance from OI | Stare at OI columns, do mental math | *"Where is the highest OI in NIFTY?"* |
 | Position sizing | Spreadsheet + guesswork | *"Size a position for ₹5L capital, 2% risk"* |
+---
+
+## 🕐 24/7 Availability — Works Even After Market Hours
+
+Most NSE tools and scrapers **break after 3:30 PM IST** because NSE takes down the option chain API. This MCP server uses a **dual-endpoint fallback architecture**:
+
+| Time | Data Source | What You Get |
+|:---|:---|:---|
+| **9:15 AM – 3:30 PM** (Market Open) | Primary NSE API | Full chain with IV, Greeks, change-in-OI, bid/ask |
+| **After 3:30 PM** (Market Closed) | Fallback derivatives API | Closing snapshot with OI, LTP, volume, strike prices |
+
+> **No configuration needed.** The fallback is automatic. You always get data, any time of day.
 
 ---
 
