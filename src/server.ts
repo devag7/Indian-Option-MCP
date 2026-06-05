@@ -64,7 +64,7 @@ async function ensureProvider(): Promise<void> {
 export function createServer(): McpServer {
   const server = new McpServer({
     name: 'indian-option-mcp',
-    version: '1.0.0',
+    version: '1.1.0',
   });
 
   // Fire-and-forget: start init in background (but don't block server startup)
