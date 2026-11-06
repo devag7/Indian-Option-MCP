@@ -7,10 +7,10 @@ Thank you for your interest in contributing! This project aims to be the best fr
 ```bash
 git clone https://github.com/devag7/Indian-Option-MCP.git
 cd Indian-Option-MCP
-npm install
-npm run build     # tsc + esbuild bundle
+pnpm install
+pnpm run build     # tsc + esbuild bundle
 npm test          # run tests
-npm run inspect   # open MCP Inspector
+pnpm run inspect   # open MCP Inspector
 ```
 
 ## 🔄 Development Workflow
@@ -18,9 +18,9 @@ npm run inspect   # open MCP Inspector
 1. **Fork** the repository
 2. **Create a branch**: `git checkout -b feat/your-feature`
 3. **Make changes** in `src/`
-4. **Type-check**: `npm run lint`
+4. **Type-check**: `pnpm run lint`
 5. **Test**: `npm test`
-6. **Build**: `npm run build`
+6. **Build**: `pnpm run build`
 7. **Commit** with [Conventional Commits](https://www.conventionalcommits.org/):
    - `feat:` — New feature
    - `fix:` — Bug fix
@@ -55,7 +55,7 @@ src/
 
 ```bash
 npm test              # Run all tests
-npm run test:watch    # Watch mode
+pnpm run test:watch    # Watch mode
 ```
 
 ### Smoke Test
