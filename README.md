@@ -171,8 +171,8 @@ git clone https://github.com/devag7/Indian-Option-MCP.git
 cd Indian-Option-MCP
 
 # Install dependencies & build
-npm install
-npm run build
+pnpm install
+pnpm run build
 ```
 
 ### Configure Claude Desktop
@@ -426,19 +426,19 @@ indian-option-mcp/
 
 ```bash
 # Watch mode (recompile on save)
-npm run dev
+pnpm run dev
 
 # Type-check without emitting
-npm run lint
+pnpm run lint
 
 # Run tests
 npm test
 
 # Inspect with MCP Inspector
-npm run inspect
+pnpm run inspect
 
 # Clean build artifacts
-npm run clean
+pnpm run clean
 ```
 
 ---
